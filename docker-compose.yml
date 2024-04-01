@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "80:80" # Expose l'application sur le port 80 de l'hôte
+      - "443:443" # Expose l'application sur le port 443 de l'hôte (HTTPS)
+    volumes:
+      - ./evalsmsi:/var/www/html/
+    depends_on:
+      - db
+    environment:
+      - SERVERNAME=db # Paramètre par défaut (cf. config.php du projet "evalsmsi")
+
+  db:
+    image: mariadb:10.3.25
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      # Configuration par défaut. Utilise le même mot de passe pour root pour simplifier, change-le en production !
+      # Paramètre par défaut (cf. config.php du projet "evalsmsi")
+      MYSQL_ROOT_PASSWORD: webphpsql
+      MYSQL_DATABASE: evalsmsi
+      MYSQL_USER: web
+      MYSQL_PASSWORD: webphpsql
+    # Si vous souhaitez exposer le service
+    # ports:
+    #   - "3306:3306"
+    volumes:
+      - ./storage/db_data:/var/lib/mysql
+      # Permet d'initialiser la BDD au premier lancement
+      - ./evalsmsi/documentation/evalsmsi.sql:/docker-entrypoint-initdb.d/evalsmsi.sql
+
